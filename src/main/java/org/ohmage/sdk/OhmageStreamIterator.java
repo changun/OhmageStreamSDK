@@ -58,13 +58,15 @@ public class OhmageStreamIterator implements Iterator<JsonNode> {
 		params.put("auth_token", token);
 		params.put("observer_id", observerId);
 		params.put("stream_id", streamId);
-		params.put("start_date", startDate.toString());
+		
 		params.put("observer_version", observerVer);
 		params.put("stream_version", streamVer);
 		params.put("client", OhmageServer.CLIENT_STRING);
 		params.put("username", requestee.getUsername());
 		params.put("chronological",
 				this.order == SortOrder.Chronological ? "true" : "false");
+		if (endDate != null)
+			params.put("start_date", startDate.toString());
 		if (endDate != null)
 			params.put("end_date", endDate.toString());
 		if (numberToReturn != -1)
