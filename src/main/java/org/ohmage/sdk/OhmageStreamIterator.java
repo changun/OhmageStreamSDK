@@ -62,6 +62,7 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 
 		params.put("observer_version", stream.getObserverVer());
 		params.put("stream_version", stream.getStreamVer());
+
 		params.put("client", OhmageServer.CLIENT_STRING);
 		params.put("username", owner.getUsername());
 		
@@ -70,6 +71,8 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 		if (columnList != null)
 			params.put("column_list", columnList);
 		if (startDate != null)
+			params.put("start_date", startDate.toString());
+		if (endDate != null)
 			params.put("start_date", startDate.toString());
 		if (endDate != null)
 			params.put("end_date", endDate.toString());
