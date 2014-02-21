@@ -9,62 +9,66 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.ohmage.models.OhmageServer;
+import org.ohmage.models.OhmageStream;
 import org.ohmage.models.OhmageUser;
 import org.ohmage.models.OhmageUser.OhmageAuthenticationError;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kevinsawicki.http.HttpRequest;
 
-public class OhmageStreamIterator implements Iterator<JsonNode> {
+public class OhmageStreamIterator implements Iterator<ObjectNode> {
 	public enum SortOrder {
 		Chronological, ReversedChronological
 	}
 
 	private JsonFactory factory = new MappingJsonFactory();
 	private JsonParser curParser;
-	private JsonNode nextNode;
+	private ObjectNode nextNode;
 	private String nextURL;
 
-	OhmageUser requestee;
+	OhmageStream stream;
 	OhmageUser requester;
-	String observerId;
-	String streamId;
-	String observerVer;
-	String streamVer;
+	OhmageUser owner;
+
 	DateTime startDate;
 	DateTime endDate;
 	int numberToReturn;
 	SortOrder order;
-
+	String columnList;
+	
 	private void init() throws OhmageAuthenticationError, IOException {
 		String token = requester.getToken();
 		Map<String, String> params = getRequestParams(token);
-		InputStream buf = HttpRequest.post(
-				requester.getServer().getStreamReadURL(), params, false)
-				.buffer();
+		HttpRequest request = HttpRequest.post(
+				requester.getServer().getStreamReadURL(), params, false);
+		if(!request.ok()){
+			throw new IOException(request.body().substring(1, 100));
+		}
+		InputStream buf = request.stream();
 		curParser = factory.createParser(buf);
 		forwardToStartOfDataAndSetNextURL(curParser, buf);
 		advance();
-
 	}
 
-	Map<String, String> getRequestParams(String token) {
+	private Map<String, String> getRequestParams(String token) {
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("auth_token", token);
-		params.put("observer_id", observerId);
-		params.put("stream_id", streamId);
-		
-		params.put("observer_version", observerVer);
-		params.put("stream_version", streamVer);
+		params.put("observer_id", stream.getObserverId());
+		params.put("stream_id", stream.getStreamId());
+
+		params.put("observer_version", stream.getObserverVer());
+		params.put("stream_version", stream.getStreamVer());
 		params.put("client", OhmageServer.CLIENT_STRING);
-		params.put("username", requestee.getUsername());
+		params.put("username", owner.getUsername());
+		
 		params.put("chronological",
 				this.order == SortOrder.Chronological ? "true" : "false");
+		if (columnList != null)
+			params.put("column_list", columnList);
 		if (startDate != null)
 			params.put("start_date", startDate.toString());
 		if (endDate != null)
@@ -76,7 +80,7 @@ public class OhmageStreamIterator implements Iterator<JsonNode> {
 
 	void forwardToStartOfDataAndSetNextURL(JsonParser jp, InputStream input)
 			throws IOException {
-
+		
 		jp.nextToken(); // START {
 		jp.nextToken(); // FIELD NAME
 		String fieldName = jp.getCurrentName();
@@ -95,7 +99,7 @@ public class OhmageStreamIterator implements Iterator<JsonNode> {
 			assert fieldName.equals("data");
 			// skip Array starting token (i.e. [)
 			jp.nextToken(); // ARRAY START
-			if (metadata.get("next") != null) {
+			if (metadata.get("next") != null && metadata.get("count").asInt() != 0) {
 				this.nextURL = metadata.get("next").asText();
 			} else {
 				this.nextURL = null;
@@ -111,9 +115,10 @@ public class OhmageStreamIterator implements Iterator<JsonNode> {
 		nextNode = null;
 		if (curParser.nextToken() != JsonToken.START_OBJECT) {
 			if (nextURL == null) {
+				curParser.close();
 				return;
 			} else {
-				InputStream buf = HttpRequest.get(nextURL).buffer();
+				InputStream buf = HttpRequest.get(nextURL).acceptGzipEncoding().uncompress(true).buffer();
 				curParser = factory.createParser(buf);
 				forwardToStartOfDataAndSetNextURL(curParser, buf);
 			}
@@ -122,44 +127,40 @@ public class OhmageStreamIterator implements Iterator<JsonNode> {
 		nextNode = curParser.readValueAsTree();
 	}
 
+	public boolean hasNext() {
+		return nextNode != null;
+	}
+
+	public ObjectNode next() {
+		ObjectNode ret = nextNode;
+		try {
+			advance();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return ret;
+	}
+
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+
 	public static class Builder {
-		private OhmageUser requestee;
-		private String observerId;
-		private String streamId;
-		private String observerVer;
-		private String streamVer;
+		private OhmageStream stream;
 		private OhmageUser requester;
 		private DateTime startDate;
 		private DateTime endDate;
 		private int numberToReturn = -1;
 		private SortOrder order = SortOrder.Chronological;
-
-		public Builder requestee(OhmageUser requestee) {
-			this.requestee = requestee;
+		private OhmageUser owner;
+		private String columnList;
+		protected Builder stream(OhmageStream stream) {
+			this.stream = stream;
 			return this;
 		}
 
-		public Builder observerId(String observerId) {
-			this.observerId = observerId;
-			return this;
-		}
-
-		public Builder streamId(String streamId) {
-			this.streamId = streamId;
-			return this;
-		}
-
-		public Builder observerVer(String observerVer) {
-			this.observerVer = observerVer;
-			return this;
-		}
-
-		public Builder streamVer(String streamVer) {
-			this.streamVer = streamVer;
-			return this;
-		}
-
-		public Builder requester(OhmageUser requester) {
+		protected Builder requester(OhmageUser requester) {
 			this.requester = requester;
 			return this;
 		}
@@ -184,50 +185,32 @@ public class OhmageStreamIterator implements Iterator<JsonNode> {
 			return this;
 		}
 
-		public OhmageStreamIterator build() throws OhmageAuthenticationError,
-				IOException {
-			if (this.observerId == null || this.requestee == null
-					|| this.streamId == null || this.streamVer == null
-					|| this.requester == null) {
-				throw new IllegalArgumentException(
-						"Missing some of the required arguments");
-			}
+		protected Builder owner(OhmageUser user) {
+			this.owner = user;
+			return this;
+		}
+		public Builder columnList(String columnList){
+			this.columnList = columnList;
+			return this;
+		}
+		public OhmageStreamIterator build() throws OhmageAuthenticationError, IOException {
 			return new OhmageStreamIterator(this);
 		}
+		
+		
 	}
 
-	private OhmageStreamIterator(Builder builder)
-			throws OhmageAuthenticationError, IOException {
-		this.requestee = builder.requestee;
-		this.observerId = builder.observerId;
-		this.streamId = builder.streamId;
-		this.observerVer = builder.observerVer;
-		this.streamVer = builder.streamVer;
+	private OhmageStreamIterator(Builder builder) throws OhmageAuthenticationError, IOException {
+		if(builder.stream == null || builder.requester==null || builder.owner==null)
+			throw new IllegalArgumentException();
+		this.stream = builder.stream;
 		this.requester = builder.requester;
 		this.startDate = builder.startDate;
 		this.endDate = builder.endDate;
 		this.numberToReturn = builder.numberToReturn;
 		this.order = builder.order;
-
+		this.owner = builder.owner;
+		this.columnList = builder.columnList;
 		init();
-	}
-
-	public boolean hasNext() {
-		return nextNode != null;
-	}
-
-	public JsonNode next() {
-		JsonNode ret = nextNode;
-		try {
-			advance();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return ret;
-	}
-
-	public void remove() {
-		throw new UnsupportedOperationException();
 	}
 }

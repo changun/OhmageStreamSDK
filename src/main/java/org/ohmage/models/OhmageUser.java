@@ -6,38 +6,47 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kevinsawicki.http.HttpRequest;
 
 public class OhmageUser implements Serializable{
-	OhmageServer _server;
-	String _username;
-	String _password;
+	OhmageServer server;
+	String username;
+	
+	public String getPassword() {
+		return password;
+	}
+	
+
+	String password;
 
 	public OhmageServer getServer(){
-		return _server;
+		return server;
 	}
 	public OhmageUser(String server, String username, String password) {
 		this(new OhmageServer(server), username, password);
 	}
+	public OhmageUser(){};
 	public OhmageUser(OhmageServer server, String username, String password) {
 		super();
-		this._server = server;
-		this._username = username;
-		this._password = password;
+		this.server = server;
+		this.username = username;
+		this.password = password;
 	}
 	public String getUsername(){
-		return _username;
+		return username;
 	}
+	@JsonIgnoreProperties
 	public String getToken() throws OhmageAuthenticationError{
 		 		ObjectMapper mapper = new ObjectMapper();
 				HashMap<String, String> data = new HashMap<String, String>();
-				data.put("user", _username);
-				data.put("password", _password);
+				data.put("user", username);
+				data.put("password", password);
 				data.put("client", OhmageServer.CLIENT_STRING);
 				try{
-					InputStream res = HttpRequest.post(_server.getAuthenticateURL(), data, false).buffer();
+					InputStream res = HttpRequest.post(server.getAuthenticateURL(), data, false).buffer();
 					ObjectNode rootNode = mapper.readValue(res, ObjectNode.class);
 					if(rootNode.get("result").asText().equals("success")){	
 						return rootNode.get("token").asText();
@@ -54,7 +63,7 @@ public class OhmageUser implements Serializable{
 
 	@Override
 	public String toString(){
-		return String.format("User %s on %s", _username, _server);
+		return String.format("User %s on %s", username, server);
 	}
 	
 	public class OhmageAuthenticationError extends Exception{
