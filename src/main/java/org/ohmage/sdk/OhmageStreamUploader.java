@@ -42,20 +42,24 @@ public class OhmageStreamUploader {
 		
 		for(ObjectNode node: data){
 			node.put("stream_id", stream.getStreamId());
-			node.put("stream_version", stream.getStreamVer());
+			node.put("stream_version", Integer.valueOf(stream.getStreamVer()));
 		}
 		params.put("data", mapper.writeValueAsString(data));
 		
 		
-		InputStream buf = HttpRequest.post(
-				requester.getServer().getStreamReadURL(), params, false)
-				.buffer();
-		ObjectNode ret = mapper.readValue(buf, ObjectNode.class);
-		if(ret.get("result").asText() != "success"){
-			throw new IOException(mapper.writeValueAsString(ret));
+		HttpRequest request = HttpRequest.post(
+				requester.getServer().getStreamUploadURL()).form(params);
+		if(request.code() == 200){
+			InputStream buf = request.buffer();
+			ObjectNode ret = mapper.readValue(buf, ObjectNode.class);
+			if(!ret.get("result").asText().equals("success")){
+				throw new IOException(mapper.writeValueAsString(ret));
+			}
+			else if(ret.get("invalid_points").size() != 0 ){
+				throw new IOException(mapper.writeValueAsString(ret.get("invalid_points")));
+			}
 		}
-		else if(ret.get("invalid_points").size() != 0 ){
-			throw new IOException(mapper.writeValueAsString(ret.get("invalid_points")));
-		}
+		else
+			throw new IOException("Upload request failed. Code:" + request.code());
 	}
 }

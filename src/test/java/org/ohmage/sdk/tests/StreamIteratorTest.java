@@ -30,12 +30,12 @@ public class StreamIteratorTest {
 				.streamVer("2012050700").build();
 		
 		// requester should have access to the requestee' data streams
-		OhmageUser requester = new OhmageUser("https://test.ohmage.org", "username", "password");
+		OhmageUser requester = new OhmageUser("https://test.ohmage.org", "changun", "1qaz@WSX");
 		// create a ohmage stream client
 		OhmageStreamClient client = new OhmageStreamClient(requester);
 		
 		// requestee's password is not required
-		OhmageUser requestee = new OhmageUser(requester.getServer(), "requestee_username", null);
+		OhmageUser requestee = new OhmageUser(requester.getServer(), "changun", null);
 
 		
 		OhmageStreamIterator streamIterator = client.getOhmageStreamIteratorBuilder(stream, requestee)

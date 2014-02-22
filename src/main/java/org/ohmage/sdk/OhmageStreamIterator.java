@@ -116,18 +116,28 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 
 	private void advance() throws IOException {
 		nextNode = null;
-		if (curParser.nextToken() != JsonToken.START_OBJECT) {
+		JsonToken curToken = curParser.nextToken() ;
+		if(curToken == JsonToken.START_OBJECT){
+			nextNode = curParser.readValueAsTree();
+			return;
+		}
+		else {
 			if (nextURL == null) {
 				curParser.close();
 				return;
 			} else {
-				InputStream buf = HttpRequest.get(nextURL).acceptGzipEncoding().uncompress(true).buffer();
+				InputStream buf = HttpRequest.get(nextURL).stream();
+
 				curParser = factory.createParser(buf);
 				forwardToStartOfDataAndSetNextURL(curParser, buf);
+				advance();
 			}
 		}
+		
 		// when we get here, we should be ready to read the next node
-		nextNode = curParser.readValueAsTree();
+		// move to next token if we are at STA
+		
+
 	}
 
 	public boolean hasNext() {
@@ -139,8 +149,7 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 		try {
 			advance();
 		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			System.err.println(e);
 		}
 		return ret;
 	}

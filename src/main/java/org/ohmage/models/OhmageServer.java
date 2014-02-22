@@ -16,6 +16,9 @@ public class OhmageServer implements Serializable {
 	public String getStreamReadURL(){
 		return baseURL + "app/stream/read";
 	}
+	public String getStreamUploadURL(){
+		return baseURL + "app/stream/upload";
+	}
 	public String getClassReadURL(){
 		return baseURL + "app/class";
 	}
