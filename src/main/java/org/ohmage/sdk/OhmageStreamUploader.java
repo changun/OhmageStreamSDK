@@ -49,7 +49,8 @@ public class OhmageStreamUploader {
 		
 		HttpRequest request = HttpRequest.post(
 				requester.getServer().getStreamUploadURL()).form(params);
-		if(request.code() == 200){
+
+		if(request.ok()){
 			InputStream buf = request.buffer();
 			ObjectNode ret = mapper.readValue(buf, ObjectNode.class);
 			if(!ret.get("result").asText().equals("success")){

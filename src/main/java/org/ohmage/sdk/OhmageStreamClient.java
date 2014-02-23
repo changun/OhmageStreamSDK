@@ -1,6 +1,7 @@
 package org.ohmage.sdk;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.ohmage.models.OhmageServer;
@@ -25,6 +26,11 @@ public class OhmageStreamClient {
 	}
 	public void upload(OhmageStream stream, List<ObjectNode> data) throws OhmageAuthenticationError, IOException{
 		new OhmageStreamUploader(stream, requester).upload(data);
+	}
+	public void upload(OhmageStream stream, ObjectNode data) throws OhmageAuthenticationError, IOException{
+		List<ObjectNode> nodeArray = new ArrayList<ObjectNode> ();
+		nodeArray.add(data);
+		new OhmageStreamUploader(stream, requester).upload(nodeArray);
 	}
 	public OhmageServer getServer(){
 		return this.requester.getServer();
