@@ -44,7 +44,7 @@ Data upload example
 						.streamId("regular")
 						.streamVer("2012050700").build();
 				
-		// requester should have access to the requestee' data streams
+		// the user to which the record is uploaded to
 		OhmageUser user= new OhmageUser("https://test.ohmage.org", "username", "password");
 		// create a ohmage stream client
 		OhmageStreamClient client = new OhmageStreamClient(user);
@@ -68,5 +68,8 @@ Data upload example
 		
 		/*** upload the record ***/
 		client.upload(targetStream, record);
+		
+		// you can also upload in batch
+		client.upload(targetStream, List<ObjectNode> records);
 			
 ```
