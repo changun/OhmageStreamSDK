@@ -1,7 +1,9 @@
 package org.ohmage.models;
 
+import java.io.Serializable;
 
-public class OhmageStream {
+
+public class OhmageStream  implements Serializable {
 	
 	String observerId;
 	String streamId;

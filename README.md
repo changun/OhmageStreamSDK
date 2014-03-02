@@ -4,6 +4,7 @@ OhmageStreamSDK
 A simple SDK for accessing ohmage stream API
 
 
+Data download example
 ```java
 		// targeted ohmage stream
 		OhmageStream stream = new OhmageStream.Builder()
@@ -31,4 +32,41 @@ A simple SDK for accessing ohmage stream API
 			JsonNode node = streamIterator.next();
 			// then do sth with it....
 		}
+```
+
+Data upload example
+```java
+		
+		/*** setup the target stream and user ***/
+		OhmageStream stream = new OhmageStream.Builder()
+						.observerId("edu.ucla.cens.Mobility")
+						.observerVer("2012061300")
+						.streamId("regular")
+						.streamVer("2012050700").build();
+				
+		// requester should have access to the requestee' data streams
+		OhmageUser user= new OhmageUser("https://test.ohmage.org", "username", "password");
+		// create a ohmage stream client
+		OhmageStreamClient client = new OhmageStreamClient(user);
+		
+		/*** create a record of which the fields comply with the stream's schema ***/
+		
+		ObjectMapper mapper = new ObjectMapper();
+
+		// populate metadata fields ....
+		ObjectNode metadata = mapper.createObjectNode();
+		metadata.put(...)
+		
+		// populate data fields
+		ObjectNode data = mapper.createObjectNode();
+		data.put(...)
+		
+		
+		ObjectNode record = mapper.createObjectNode();
+		record.put("data", data);
+		record.put("metadata", metadata);
+		
+		/*** upload the record ***/
+		client.upload(targetStream, record);
+			
 ```
