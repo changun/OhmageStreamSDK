@@ -46,7 +46,7 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 		HttpRequest request = HttpRequest.post(
 				requester.getServer().getStreamReadURL(), params, false);
 		if(!request.ok()){
-			throw new IOException(request.body().substring(1, 100));
+			throw new OhmageHttpRequestException(request);
 		}
 		InputStream buf = request.stream();
 		curParser = factory.createParser(buf);
@@ -65,6 +65,7 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 
 		params.put("client", OhmageServer.CLIENT_STRING);
 		params.put("username", owner.getUsername());
+		
 		
 		params.put("chronological",
 				this.order == SortOrder.Chronological ? "true" : "false");
@@ -126,7 +127,9 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 				curParser.close();
 				return;
 			} else {
-				InputStream buf = HttpRequest.get(nextURL).stream();
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("username", this.owner.getUsername());
+				InputStream buf = HttpRequest.get(nextURL, params, false).stream();
 
 				curParser = factory.createParser(buf);
 				forwardToStartOfDataAndSetNextURL(curParser, buf);

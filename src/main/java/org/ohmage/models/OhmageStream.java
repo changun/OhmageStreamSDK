@@ -18,7 +18,9 @@ public class OhmageStream  implements Serializable {
 		this.observerVer = observerVer;
 		this.streamVer = streamVer;
 	}
-
+	public String toString(){
+		return String.format("ObserverId:%s(%s) StreamId:%s(%s)", observerId, observerVer, streamId, streamVer);
+	}
 	public void setObserverId(String observerId) {
 		this.observerId = observerId;
 	}
