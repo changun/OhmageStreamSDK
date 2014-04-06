@@ -20,6 +20,7 @@ import com.github.kevinsawicki.http.HttpRequest;
 
 public class OhmageClass {
 
+	private static String INDIVIDUAL_CLASS_NAME = "Yourself";
 	private String urn;
 	private String name;
 	
@@ -74,5 +75,8 @@ public class OhmageClass {
 		this.urn = id;
 		this.name = name;
 		this.server = server;
+	}
+	static public OhmageClass getIndividualClass(){
+		return new OhmageClass(INDIVIDUAL_CLASS_NAME, INDIVIDUAL_CLASS_NAME, null);
 	}
 }

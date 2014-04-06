@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -124,6 +125,8 @@ public class OhmageUser implements Serializable{
 			}
 			ret.put(_class, users);
 		}
+		// add the inidividual class for the user himself
+		ret.put(OhmageClass.getIndividualClass(), Arrays.asList(this.getUsername()));
 		return ret;
 	}
 	public boolean hasAccessTo(String username){
