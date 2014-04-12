@@ -59,8 +59,9 @@ public class OhmageClass {
 			while(userNodes.hasNext()){
 				Map.Entry<String,JsonNode> userNode = userNodes.next();
 				String user = userNode.getKey();
-				OhmagePermission permission = (userNode.getValue().asText().equals("restricted")) ? 
-										OhmagePermission.RESTRICTED : OhmagePermission.PREVILEGED;
+				OhmagePermission permission = (userNode.getValue().asText().equals("previleged")) ? 
+										OhmagePermission.PREVILEGED : OhmagePermission.RESTRICTED;
+				
 				ret.put(user, permission);
 			}
 			return ret;
