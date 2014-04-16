@@ -110,7 +110,7 @@ public class OhmageUser implements Serializable{
 	public List<OhmageClass> getPrevilegedClasses(){
 		ArrayList<OhmageClass> ret = new ArrayList<OhmageClass>();
 		for(OhmageClass _class:this.getClassList()){
-			if(_class.getUserList(this.getToken()).get(this.username) == OhmagePermission.PREVILEGED){
+			if(_class.getUserList(this.getToken()).get(this.username) == OhmagePermission.PRIVILEGED){
 				ret.add(_class);
 			}
 		}
