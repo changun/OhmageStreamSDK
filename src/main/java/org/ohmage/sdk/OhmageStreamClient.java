@@ -10,7 +10,6 @@ import org.ohmage.models.OhmageUser;
 import org.ohmage.models.OhmageUser.OhmageAuthenticationError;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.kevinsawicki.http.HttpRequest;
 
 public class OhmageStreamClient {
 

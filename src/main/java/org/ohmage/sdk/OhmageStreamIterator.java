@@ -1,5 +1,6 @@
 package org.ohmage.sdk;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -20,13 +21,14 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.kevinsawicki.http.HttpRequest;
 
-public class OhmageStreamIterator implements Iterator<ObjectNode> {
+public class OhmageStreamIterator implements Iterator<ObjectNode>, Closeable {
 	public enum SortOrder {
 		Chronological, ReversedChronological
 	}
 
 	private JsonFactory factory = new MappingJsonFactory();
 	private JsonParser curParser;
+	private InputStream curInputStream;
 	private ObjectNode nextNode;
 	private String nextURL;
 
@@ -129,10 +131,9 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 			} else {
 				HashMap<String, String> params = new HashMap<String, String>();
 				params.put("username", this.owner.getUsername());
-				InputStream buf = HttpRequest.get(nextURL, params, false).stream();
-
-				curParser = factory.createParser(buf);
-				forwardToStartOfDataAndSetNextURL(curParser, buf);
+				curInputStream = HttpRequest.get(nextURL, params, false).stream();
+				curParser = factory.createParser(curInputStream);
+				forwardToStartOfDataAndSetNextURL(curParser, curInputStream);
 				advance();
 			}
 		}
@@ -227,5 +228,15 @@ public class OhmageStreamIterator implements Iterator<ObjectNode> {
 		this.owner = builder.owner;
 		this.columnList = builder.columnList;
 		init();
+	}
+
+	public void close() throws IOException {
+		if(this.curParser!=null && !this.curParser.isClosed()){
+			this.curParser.close();
+		}
+		if(this.curInputStream!=null){
+			this.curInputStream.close();
+		}
+		
 	}
 }

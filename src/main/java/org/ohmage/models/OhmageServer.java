@@ -1,10 +1,8 @@
 package org.ohmage.models;
 
 import java.io.Serializable;
-import java.net.URL;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class OhmageServer implements Serializable {

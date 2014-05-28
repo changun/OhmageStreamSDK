@@ -2,7 +2,6 @@ package org.ohmage.models;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,12 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -143,6 +137,13 @@ public class OhmageUser implements Serializable{
 	@Override
 	public int hashCode(){
 		return String.format("%s:%s", username, server).hashCode();
+	}
+	@Override
+	public boolean equals(Object other){
+		if(other instanceof OhmageUser){
+			return this.hashCode() == other.hashCode();
+		}
+		return false;
 	}
 	static public class OhmageAuthenticationError extends Exception{
 		OhmageUser user;
