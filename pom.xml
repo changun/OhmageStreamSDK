@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ohmage</groupId>
   <artifactId>streamSDK</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <description>SDK for accessing ohmage stream API</description>
   
   <dependencies>
