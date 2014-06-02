@@ -19,8 +19,8 @@ public class OhmageClass {
 	private String urn;
 	private String name;
 	
-	@JsonIgnore
-	public OhmageServer server;
+
+	private OhmageServer server;
 	
 	@JsonProperty
 	public String getUrn() {
@@ -30,11 +30,37 @@ public class OhmageClass {
 	public String getName() {
 		return name;
 	}
+	/**
+	 * @return the server
+	 */
+	@JsonIgnore
+	public OhmageServer getServer() {
+		return server;
+	}
+	/**
+	 * @param server the server to set
+	 */
+	@JsonIgnore
+	public void setServer(OhmageServer server) {
+		this.server = server;
+	}
+	/**
+	 * @param urn the urn to set
+	 */
+	public void setUrn(String urn) {
+		this.urn = urn;
+	}
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 	public String toString(){
 		return name;
 	}
 
-
+	
 	static private ObjectMapper mapper = new ObjectMapper();
 	
 	/**
@@ -71,6 +97,8 @@ public class OhmageClass {
 		this.urn = id;
 		this.name = name;
 		this.server = server;
+	}
+	public OhmageClass(){
 	}
 	static public OhmageClass getIndividualClass(){
 		return new OhmageClass(INDIVIDUAL_CLASS_NAME, INDIVIDUAL_CLASS_NAME, null);

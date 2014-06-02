@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -19,16 +21,17 @@ import com.github.kevinsawicki.http.HttpRequest;
 public class OhmageUser implements Serializable{
 	OhmageServer server;
 	String username;
+	String password;
+	private String auth_token;
 	
 	public String getPassword() {
 		return password;
 	}
-	
-
-	String password;
-	private String auth_token;
 	public OhmageServer getServer(){
 		return server;
+	}
+	public String getUsername(){
+		return username;
 	}
 	public OhmageUser(String server, String username, String password) {
 		this(new OhmageServer(server), username, password);
@@ -41,8 +44,31 @@ public class OhmageUser implements Serializable{
 		this.username = username;
 		this.password = password;
 	}
-	public String getUsername(){
-		return username;
+	public OhmageUser(OhmageServer server, String auth_token) {
+		super();
+		this.server = server;
+		this.auth_token = auth_token;
+ 		ObjectMapper mapper = new ObjectMapper();
+		// check auth token
+		HashMap<String, String> data = new HashMap<String, String>();
+		data.put("auth_token", auth_token);
+		data.put("client", OhmageServer.CLIENT_STRING);
+		
+		// query Who AM I to see if it is still valid
+		InputStream res = HttpRequest.post(server.getWhoAmIURL(), data, false).stream();
+		
+		ObjectNode rootNode;
+		try {
+			rootNode = mapper.readValue(res, ObjectNode.class);
+			if(rootNode.get("result").asText().equals("success")){
+				this.username = rootNode.get("username").asText();
+			}else{
+				throw new RuntimeException("Token is invalid");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Server return incorrect response");
+		}
+
 	}
 	@JsonIgnore
 	public List<OhmageClass> getClassList(){
@@ -110,6 +136,7 @@ public class OhmageUser implements Serializable{
 		}
 		return ret;
 	}
+	@JsonIgnore
 	public Map<OhmageClass, List<String>> getAccessibleUsers(){
 		HashMap<OhmageClass, List<String>> ret = new HashMap<OhmageClass, List<String>>();
 		for(OhmageClass _class:this.getPrevilegedClasses()){
