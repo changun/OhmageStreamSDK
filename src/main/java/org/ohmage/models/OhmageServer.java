@@ -30,6 +30,10 @@ public class OhmageServer implements Serializable {
 	public String getUserInfoURL(){
 		return baseURL + "app/user_info/read";
 	}
+    @JsonIgnore
+    public String getUserReadURL(){
+        return baseURL + "app/user/read";
+    }
 	@JsonIgnore
 	public String getWhoAmIURL(){
 		return baseURL + "app/user/whoami";

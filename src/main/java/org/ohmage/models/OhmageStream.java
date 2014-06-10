@@ -19,7 +19,7 @@ public class OhmageStream  implements Serializable {
 		this.streamVer = streamVer;
 	}
 	public String toString(){
-		return String.format("ObserverId:%s(%s) StreamId:%s(%s)", observerId, observerVer, streamId, streamVer);
+		return String.format("%s&%s&%s&%s", observerId, streamId, observerVer, streamVer);
 	}
 	public void setObserverId(String observerId) {
 		this.observerId = observerId;

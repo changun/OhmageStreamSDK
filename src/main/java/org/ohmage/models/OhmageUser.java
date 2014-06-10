@@ -3,12 +3,7 @@ package org.ohmage.models;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -82,7 +77,7 @@ public class OhmageUser implements Serializable{
 			 Iterator<Map.Entry<String,JsonNode>> classes=  rootNode.get("data").get(this.getUsername()).get("classes").fields();
 			ArrayList<OhmageClass> ret = new ArrayList<OhmageClass>();
 			while(classes.hasNext()){
-				Map.Entry<String,JsonNode> _class = classes.next(); 
+				Map.Entry<String,JsonNode> _class = classes.next();
 				ret.add(new OhmageClass(_class.getKey(), _class.getValue().asText(), this.server));
 			}
 			return ret;
@@ -137,7 +132,7 @@ public class OhmageUser implements Serializable{
 		return ret;
 	}
 	@JsonIgnore
-	public Map<OhmageClass, List<String>> getAccessibleUsers(){
+	public Map<OhmageClass, List<String>> getAccessibleUsersByClass(){
 		HashMap<OhmageClass, List<String>> ret = new HashMap<OhmageClass, List<String>>();
 		for(OhmageClass _class:this.getPrevilegedClasses()){
 			List<String> users = new ArrayList<String>();
@@ -150,12 +145,21 @@ public class OhmageUser implements Serializable{
 		ret.put(OhmageClass.getIndividualClass(), Arrays.asList(this.getUsername()));
 		return ret;
 	}
+    public  List<String> getAccessibleUsers(){
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            HashMap<String, String> data = new HashMap<String, String>();
+            data.put("client", OhmageServer.CLIENT_STRING);
+            data.put("auth_token", this.getToken());
+            InputStream res = HttpRequest.post(server.getUserReadURL(), data, false).buffer();
+            Map map = mapper.readValue(res, Map.class);
+            return new ArrayList<>(((Map<String, Object>) map.get("data")).keySet());
+        }catch(IOException e){
+            throw new RuntimeException(e);
+        }
+    }
 	public boolean hasAccessTo(String username){
-		for(OhmageClass _class: this.getPrevilegedClasses()){
-			if(_class.getUserList(this.getToken()).containsKey(username))
-				return true;
-		}
-		return false;
+		return this.getAccessibleUsers().contains(username);
 	}
 	@Override
 	public String toString(){
