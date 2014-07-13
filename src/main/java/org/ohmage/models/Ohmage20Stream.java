@@ -84,7 +84,7 @@ public class Ohmage20Stream implements IStream {
             return this;
         }
 
-        public IStream build() {
+        public Ohmage20Stream build() {
             return new Ohmage20Stream(this);
         }
     }

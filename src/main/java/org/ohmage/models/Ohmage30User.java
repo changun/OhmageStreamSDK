@@ -5,8 +5,6 @@ package org.ohmage.models;
  */
 public class Ohmage30User implements IUser {
     String id;
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

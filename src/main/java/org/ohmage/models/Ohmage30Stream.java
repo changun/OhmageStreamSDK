@@ -16,15 +16,15 @@ public class Ohmage30Stream implements IStream {
     }
 
     public String getReadScopeName() {
-        return getBaseScopeName() + "READ";
+        return getBaseScopeName() + "read";
     }
 
     public String getWriteScopeName() {
-        return getBaseScopeName() + "WRITE";
+        return getBaseScopeName() + "write";
     }
 
     private String getBaseScopeName() {
-        return "/stream" + "/" + id + "/" + version + "/";
+        return "/streams" + "/" + id + "/" + version + "/";
     }
 
     public Ohmage30Stream(String id, String version) {

@@ -1,11 +1,14 @@
 package org.ohmage.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.kevinsawicki.http.HttpRequest;
+
+import java.io.Serializable;
 
 /**
  * Created by changun on 6/28/14.
  */
-public class Ohmage30Server {
+public class Ohmage30Server implements Serializable {
     String baseURL;
 
     public final static String CLIENT_STRING = "lifestreams";
@@ -20,6 +23,13 @@ public class Ohmage30Server {
         return baseURL + "ohmage/oauth/token";
     }
 
+    public String getStreamDataURL(Ohmage30Stream stream){
+        return baseURL + "ohmage/streams/" + stream.getId() + "/" + stream.getVersion()+"/data";
+    }
+
+    public HttpRequest getHttpRequest(String url, String method, String token){
+        return new HttpRequest(url, method).header("Authorization", "ohmage " + token);
+    }
     public String toString() {
         return this.baseURL;
     }
